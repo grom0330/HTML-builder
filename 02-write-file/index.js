@@ -1,28 +1,34 @@
-const fs = require('fs');
-const path = require('path');
-const readline = require('node:readline');
-const process = require('process');
+const fs = require("fs");
+const path = require("path");
+const readline = require("node:readline");
+const process = require("process");
 
-const path_join = path.join(__dirname, 'text.txt');
+const path_join = path.join(__dirname, "text.txt");
 
-fs.open(path_join, 'a+', (error) => {
-    if(error) throw error;
+const close = () => {
+  console.log("Buy)");
+  rl.close();
+};
 
-    console.log("What do you want to note ?:");
-})
+fs.open(path_join, "a+", (error) => {
+  if (error) throw error;
+
+  console.log("What do you want to note ?:");
+});
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
-})
+});
 
-rl.on('line', (info) => {
-  info.trim().toLowerCase() === 'exit' ? rl.close() : 
-  fs.appendFile(path_join, `${info}\n`, 
-  (error) => {if(error) throw error});
-})
+rl.on("line", (info) => {
+  info.trim().toLowerCase() === "exit"
+    ? close()
+    : fs.appendFile(path_join, `${info}\n`, (error) => {
+        if (error) throw error;
+      });
+});
 
-process.on('SIGINT', () => {
-    console.log('Buy)');
-    rl.close();
+process.on("SIGINT", () => {
+  close();
 });

@@ -7,7 +7,7 @@ fs.readdir(path_join, { withFileTypes: true }, (error, files) => {
   if (error) throw error;
 
   files.forEach((file) => {
-    if (file.isDirectory() == false) {
+    if (file.isFile()) {
       fs.stat(path.join(path_join, file.name), (error, stats) => {
         if (error) throw error;
 
