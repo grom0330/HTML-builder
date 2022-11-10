@@ -6,7 +6,7 @@ const process = require("process");
 const path_join = path.join(__dirname, "text.txt");
 
 const close = () => {
-  console.log("Buy)");
+  console.log("Bye)");
   rl.close();
 };
 
@@ -29,6 +29,6 @@ rl.on("line", (info) => {
       });
 });
 
-process.on("SIGINT", () => {
+rl.on("SIGINT", () => {
   close();
 });

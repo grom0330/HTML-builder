@@ -25,7 +25,7 @@ function openFiles(copyPath) {
 
 ////// Assets //////
 
-function deleteFiles(copyPath) {
+function deleteFilesAssets(copyPath) {
   fs.readdir(
     path.join(copyPath, "assets"),
     { withFileTypes: true },
@@ -39,9 +39,12 @@ function deleteFiles(copyPath) {
 
             files_2.forEach((file_2) => {
               if (file_2.isFile()) {
-                fs.unlink(path.join(copyPath, file_2.name), (error) => {
-                  if (error) throw error;
-                });
+                fs.unlink(
+                  path.join(copyPath, "assets", file_1.name, file_2.name),
+                  (error) => {
+                    if (error) throw error;
+                  }
+                );
               }
             });
           }
@@ -92,7 +95,7 @@ function copyFilesAssets(initialAssets, copyPath) {
 }
 
 function copyFolder(initialAssets, copyPath) {
-  deleteFiles(copyPath);
+  deleteFilesAssets(copyPath);
   copyFilesAssets(initialAssets, copyPath);
 }
 
@@ -100,7 +103,7 @@ function copyFolder(initialAssets, copyPath) {
 
 ////// Css //////
 
-function deleteFiles(copyPath) {
+function deleteFilesCss(copyPath) {
   fs.stat(path.join(copyPath, "style.css"), function (err, stat) {
     if (err == null) {
       fs.writeFile(path.join(copyPath, "style.css"), "", (error) => {
@@ -127,13 +130,67 @@ function copyFilesCss(initialStyles, copyPath) {
 }
 
 function copyCss(initialStyles, copyPath) {
-  deleteFiles(copyPath);
+  deleteFilesCss(copyPath);
   copyFilesCss(initialStyles, copyPath);
 }
 
 ///////
 
 ////// Html //////
+
+function copyHtml(copyPath) {
+  fs.copyFile(
+    path.join(__dirname, "template.html"),
+    path.join(copyPath, "index.html"),
+    (error) => {
+      if (error) throw error;
+    }
+  );
+}
+
+function doHtml(copyPath) {
+  fs.readFile(path.join(__dirname, "template.html"), "utf8", (err, chunk) => {
+    let tagsInBrackets = chunk.match(/{{(.*)}}/gi);
+    let filesByTags = [];
+
+    for (item of tagsInBrackets) {
+      item = item.replace("{{", "").replace("}}", "");
+      filesByTags.push(item);
+    }
+
+    fs.readdir(
+      path.join(__dirname, "components"),
+      { withFileTypes: true },
+      (err, files) => {
+        files.forEach((file) => {
+          for (let item of filesByTags) {
+            if (file.name == item + ".html") {
+              fs.readFile(
+                path.join(path.join(__dirname, "components"), file.name),
+                "utf8",
+                (err, data) => {
+                  if (err) throw err;
+                  chunk = chunk.replace(`{{${item}}}`, data);
+
+                  fs.writeFile(
+                    path.join(
+                      path.join(__dirname, "project-dist"),
+                      "index.html"
+                    ),
+                    chunk,
+                    () => {}
+                  );
+                }
+              );
+            }
+          }
+        });
+      }
+    );
+  });
+}
+
+doHtml(copyPath);
 
 ///////
 
@@ -142,6 +199,8 @@ function doCopy(initialStyles, initialAssets, copyPath) {
 
   copyFolder(initialAssets, copyPath);
   copyCss(initialStyles, copyPath);
+  copyHtml(copyPath);
+  doHtml(copyPath);
 }
 
 doCopy(initialStyles, initialAssets, copyPath);
